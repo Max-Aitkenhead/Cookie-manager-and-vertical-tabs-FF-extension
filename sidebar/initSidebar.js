@@ -14,29 +14,18 @@ let backgroundPage;
 browser.runtime.getBackgroundPage().then(bp => backgroundPage = bp, 
     error => console.log(error));
 
-const updateSidebar = () => {
-    const containers = [];
+const updateSidebar = async () => {
 
-    // Dependancy Injection - get tabs without a container => get contextIds => foreach contextId => get tabs in contextId
-    browser.tabs.query({cookieStoreId: 'firefox-default'})
-        .then(plainTabs => browser.contextualIdentities.query({})
-        .then(contextualIdentities => contextualIdentities
-        .forEach((contextualIdentity, i) => browser.tabs.query({ cookieStoreId: contextualIdentity.cookieStoreId })
-        .then(contextualIdentityTabs => {
+    const plainTabs = await browser.tabs.query({cookieStoreId: 'firefox-default'});
+    const contextualIdentities = await browser.contextualIdentities.query({});
+    const cookieStoreObjs = await Promise.all(contextualIdentities.map(async contextId => {
+        const contextualIdentityTabs = await browser.tabs.query({ cookieStoreId: contextId.cookieStoreId });
+        return getCookieStoreObj(contextId, contextualIdentityTabs);
+    }))
+    const containers = [].concat(getCookieStoreObj(defaultContextIdObj, plainTabs), cookieStoreObjs);
 
-            // populate containers array
-            containers.push(getCookieStoreObj(contextualIdentity, contextualIdentityTabs));
-
-            //pass out containers array when finished populating
-            if (i == contextualIdentities.length - 1) {
-                containers.push(getCookieStoreObj(defaultContextIdObj, plainTabs));
-                if (checkEmptyContainers(containers)) {
-                    updateSidebar();
-                    return;
-                }
-                writehtml(containers)
-            };
-        }))));
+    checkEmptyContainers(containers);
+    writehtml(containers);
 }
 
 const checkEmptyContainers = containers => {

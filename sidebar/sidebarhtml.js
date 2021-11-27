@@ -5,7 +5,10 @@ const contentElement = document.getElementById('content');
 */
 
 const writehtml = containers => {
+
+
     containers = sortContainers(containers);
+
     const deletableElement = removeOldElements();
     containers.forEach(container => {
         container = addHeightVars(35, container);
@@ -22,21 +25,21 @@ const writehtml = containers => {
 */
 
 const sortContainers = containers => {
-    let sortedContainers = [];
-    // filter out and add default container
-    sortedContainers.push(containers.filter(container => 
-        container.contextId.cookieStoreId == 'firefox-default')[0]);
-    // add custom containers by filtering out containers with 'Persistent' or 'No Container' in their name
-    sortedContainers = sortedContainers.concat(containers.filter(container => 
-        !container.contextId.name.includes('Persistent') && !container.contextId.name.includes('No Container')));
-    // add persistent containers by filtering by 'Persistent' AND sorting them by their name number
-    sortedContainers = sortedContainers.concat(containers.filter(container => 
+    // sortedContainers.forEach(container => 
+    //     container.tabs.sort((a, b) => a.url < b.url ? -1 : (a.url > b.url ? 1 : 0)));
+
+    const defaultContainer = containers.filter(container => 
+        container.contextId.cookieStoreId == 'firefox-default');
+
+    const namedContainers = containers.filter(container => 
+        !container.contextId.name.includes('Persistent') && !container.contextId.name.includes('No Container'));
+
+    const persistentContainers = containers.filter(container => 
         container.contextId.name.includes('Persistent'))
     .sort((a,b) => backgroundPage.getCINameNo(a.contextId.name) < backgroundPage.getCINameNo(b.contextId.name) ? -1 : 
-    backgroundPage.getCINameNo(a.contextId.name) > backgroundPage.getCINameNo(b.contextId.name) ? 1 : 0));
-    //sort tabs alphabetically by domain
-    sortedContainers.forEach(container => 
-        container.tabs.sort((a, b) => a.url < b.url ? -1 : (a.url > b.url ? 1 : 0)));
+    backgroundPage.getCINameNo(a.contextId.name) > backgroundPage.getCINameNo(b.contextId.name) ? 1 : 0);
+
+    const sortedContainers = defaultContainer.concat(namedContainers).concat(persistentContainers);
 
     return sortedContainers;
 }
