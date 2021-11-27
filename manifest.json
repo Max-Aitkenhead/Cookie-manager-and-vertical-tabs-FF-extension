@@ -1,0 +1,41 @@
+{
+    "name": "ff_manager",
+    "version": "1",
+    "manifest_version": 2,
+    "background": {
+        "scripts": ["init.js", "cookieClean.js", "contextMenu.js", "containers.js"]
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "run_at": "document_start",
+            "js": ["contentTools.js"]
+        }
+    ],
+    "sidebar_action": {
+        "default_title": "My sidebar",
+        "default_panel": "sidebar/sidebar.html"
+    },
+
+    "commands": {
+        "toggle_sidebar": {
+            "suggested_key": {
+                "default": "Ctrl+Comma",
+                "linux": "Ctrl+Comma"
+            },
+            "description": "toggles sidebar"
+        }
+    },
+
+    "permissions": ["cookies", "<all_urls>", "tabs", "contextualIdentities", "menus", 
+        "menus.overrideContext", "webRequest", "webRequestBlocking", "storage", 
+        "browsingData", "privacy", "browserSettings"],
+
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "ff@manager.a",
+            "strict_min_version": "80.0"
+        }
+    }
+
+}
