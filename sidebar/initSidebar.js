@@ -29,11 +29,7 @@ const updateSidebar = () => {
 
             //pass out containers array when finished populating
             if (i == contextualIdentities.length - 1) {
-                containers.push(getCookieStoreObj({
-                    cookieStoreId: 'firefox-default',
-                    colorCode: 'black',
-                    name: 'No Container'
-                }, plainTabs));
+                containers.push(getCookieStoreObj(defaultContextIdObj, plainTabs));
                 if (checkEmptyContainers(containers)) {
                     updateSidebar();
                     return;
@@ -50,10 +46,21 @@ const checkEmptyContainers = containers => {
     return true;
 }
 
+
+// convenient object made for passing in data to the html builder
 const getCookieStoreObj = (contextId, tabs) => ({
     contextId: contextId,
     tabs: tabs
 })
 
+const defaultContextIdObj = {
+    cookieStoreId: 'firefox-default',
+    colorCode: 'black',
+    name: 'No Container'
+};
+
 
 updateSidebar();
+
+//testgitfanciness
+
