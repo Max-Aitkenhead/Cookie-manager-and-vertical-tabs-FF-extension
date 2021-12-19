@@ -39,11 +39,17 @@ body {
 
 .tab {
     display: flex;
+    flex-flow: column nowrap;
+    color:white;
+}
+
+.tabMain {
+    display: flex;
     flex-direction: row;
     align-items: center;
-    padding:5px;
+    /* padding:5px; */
     background-color: #2c2b2b;
-    color:white;
+    height: 35px;
     /* width:100%; */
 }
 
@@ -64,6 +70,27 @@ body {
     height:22px;
     width:auto;
     margin-right:10px;
+}
+
+.tabContextMenu {
+    height: 0;
+    display: flex;
+    flex-flow: row nowrap;
+    overflow: hidden;
+    transition: height 0.5s;
+    height: 0px;
+    /* background-color: #232327; */
+}
+
+.tabContextMenuItem {
+    width: auto;
+    cursor: pointer;
+    text-align: center;
+    padding: 0 10px;
+}
+
+.tabContextMenuItem:hover {
+    background-color: black;
 }
 
 .containerTabButton {
@@ -103,3 +130,4 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+

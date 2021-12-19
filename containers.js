@@ -27,13 +27,13 @@ var newContainer = (url = 'about:blank') => {
                 name: `Persistent Cookies ${containerNo}`,
                 color: getNewContainerColour(containerNo),
                 icon: 'circle'
-        }).then(ci => newTab(ci, url));
+        }).then(ci => newTab(ci.cookieStoreId, url));
     });
 }
 
-var newTab = (contextId, url = 'about:blank') => browser.tabs.create({
+var newTab = (cookieStoreId, url = 'about:blank') => browser.tabs.create({
     active: true,
-    cookieStoreId: contextId.cookieStoreId,
+    cookieStoreId: cookieStoreId,
     url:url
 });
 

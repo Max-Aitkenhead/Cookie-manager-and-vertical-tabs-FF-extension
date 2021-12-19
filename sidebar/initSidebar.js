@@ -1,21 +1,11 @@
-browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
-    setTimeout(() => updateSidebar(), 200);
+const bpProm = new Promise((resolve, reject) => {
+    browser.runtime.getBackgroundPage().then(bp => resolve(bp), error => reject(error));
 });
 
-browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
-    if (updateInfo.hasOwnProperty('status') && updateInfo.status !== 'loading')
-        return;
-    updateSidebar();
-}, {
-    properties:['attention', 'status']
-});
-
-let backgroundPage;
-browser.runtime.getBackgroundPage().then(bp => backgroundPage = bp, 
-    error => console.log(error));
 
 const updateSidebar = async () => {
-
+    console.log('update');
+    const bp = await bpProm;
     const plainTabs = await browser.tabs.query({cookieStoreId: 'firefox-default'});
     const contextualIdentities = await browser.contextualIdentities.query({});
     const cookieStoreObjs = await Promise.all(contextualIdentities.map(async contextId => {
@@ -23,9 +13,8 @@ const updateSidebar = async () => {
         return getCookieStoreObj(contextId, contextualIdentityTabs);
     }))
     const containers = [].concat(getCookieStoreObj(defaultContextIdObj, plainTabs), cookieStoreObjs);
-
     checkEmptyContainers(containers);
-    writehtml(containers);
+    writehtml(containers, bp);
 }
 
 const checkEmptyContainers = containers => {
@@ -50,6 +39,28 @@ const defaultContextIdObj = {
 
 
 updateSidebar();
+setTimeout(() => bpProm.then(bp => initSidebarhtml(bp)), 100);
 
 //testgitfanciness
+
+browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
+    setTimeout(() => updateSidebar(), 200);
+});
+
+browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
+    if (updateInfo.hasOwnProperty('status') && updateInfo.status !== 'loading')
+        return;
+    updateSidebar();
+}, {
+    properties:['attention', 'status']
+});
+
+// let backgroundPage;
+// browser.runtime.getBackgroundPage().then(bp => backgroundPage = bp, error => console.log(error));
+
+document.addEventListener( "contextmenu", function(e) {
+    console.log(e);
+    e.preventDefault();
+    toggleContextMenu(e.target);
+});
 

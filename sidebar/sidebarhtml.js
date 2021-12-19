@@ -4,18 +4,17 @@ const contentElement = document.getElementById('content');
     writehtml is the high level flow for generating the html in the sidebar
 */
 
-const writehtml = containers => {
+const writehtml = (containers, bp) => {
 
-
-    containers = sortContainers(containers);
+    containers = sortContainers(containers, bp);
 
     const deletableElement = removeOldElements();
     containers.forEach(container => {
         container = addHeightVars(35, container);
         const containerElement = addElement(deletableElement, getContainerTemplate(container));
-        const containerTitle = addElement(containerElement, getContainerTitleTemplate(container, containerElement));
+        const containerTitle = addElement(containerElement, getContainerTitleTemplate(container, containerElement, bp));
         const tabDrawerElement = addElement(containerElement, getTabDrawerTemplate());
-        container.tabs.forEach(tab => addElement(tabDrawerElement, getTabTemplate(tab)));
+        container.tabs.forEach(tab => addElement(tabDrawerElement, getTabTemplate(tab, bp)));
     })
 }
 
@@ -24,7 +23,7 @@ const writehtml = containers => {
     Persistent containers (sorted by number).  All tabs are also sorted alphabetically by domain within the containers.  
 */
 
-const sortContainers = containers => {
+const sortContainers = (containers, bp) => {
     // sortedContainers.forEach(container => 
     //     container.tabs.sort((a, b) => a.url < b.url ? -1 : (a.url > b.url ? 1 : 0)));
 
@@ -36,12 +35,10 @@ const sortContainers = containers => {
 
     const persistentContainers = containers.filter(container => 
         container.contextId.name.includes('Persistent'))
-    .sort((a,b) => backgroundPage.getCINameNo(a.contextId.name) < backgroundPage.getCINameNo(b.contextId.name) ? -1 : 
-    backgroundPage.getCINameNo(a.contextId.name) > backgroundPage.getCINameNo(b.contextId.name) ? 1 : 0);
+    .sort((a,b) => bp.getCINameNo(a.contextId.name) < bp.getCINameNo(b.contextId.name) ? -1 : 
+    bp.getCINameNo(a.contextId.name) > bp.getCINameNo(b.contextId.name) ? 1 : 0);
 
-    const sortedContainers = defaultContainer.concat(namedContainers).concat(persistentContainers);
-
-    return sortedContainers;
+    return defaultContainer.concat(namedContainers, persistentContainers);
 }
 
 /*
@@ -86,13 +83,16 @@ const addElement = (parent, template) => {
     element.innerHTML = template.html;
     // add the event listeners
     template.eventListeners.forEach(el => {
-        // construct event listener function if it is not already a function
-        if (typeof el.func === 'object') {
-            const elElementArgs = el.func.classElementArgs.map(arg => element.getElementsByClassName(arg)[0]);
-            el.func = el.func.innerfunc(...el.func.args, ...elElementArgs);
+        try {
+            // construct event listener function if it is not already a function
+            if (typeof el.func === 'object') {
+                const elElementArgs = el.func.classElementArgs.map(arg => element.getElementsByClassName(arg)[0]);
+                el.func = el.func.innerfunc(...el.func.args, ...elElementArgs);
+            }
+            // add event listener to correct dom element specified by it's class name
+            element.getElementsByClassName(el.className)[0].addEventListener(el.type, el.func);
         }
-        // add event listener to correct dom element specified by it's class name
-        element.getElementsByClassName(el.className)[0].addEventListener(el.type, el.func);
+        catch{}
     })
     // this is why we hate javascript
     const fc = element.firstChild;
@@ -107,7 +107,7 @@ const getContainerTemplate = container => ({
     eventListeners: []
 })
 
-const getContainerTitleTemplate = (container, containerElement) => ({
+const getContainerTitleTemplate = (container, containerElement, bp) => ({
     html: `<div class="containerTitle" style="height:${container.closedHeightPx}">
             <div class="containerNameElement">
                 ${container.contextId.name}  (${container.tabs.length})
@@ -121,7 +121,7 @@ const getContainerTitleTemplate = (container, containerElement) => ({
     },{
         type: 'click',
         className: 'containerTabButton',
-        func: () => backgroundPage.newTab(container.contextId)
+        func: () => bp.newTab(container.contextId.cookieStoreId)
     }]
 })
 
@@ -139,28 +139,53 @@ const getTabDrawerTemplate = () => ({
     eventListeners: []
 });
 
-const getTabTemplate = tab => {
+const getTabTemplate = (tab, bp) => {
     const activeTabColour = tab.active === true ? 'background-color:#6490b1' : '';
     const muteStyle = tab.mutedInfo.muted ? 'flex' : 'none';
     const audibleStyle = tab.audible ? 'flex' : 'none';
+    const tabLoadedButton = tab.discarded ? '' : '<div class="tabContextMenuItem tabUnload">Unload</div>';
+    const tabLoadedIconStyle = tab.discarded ? 'none' : 'flex';
     return {
-        html: `<div class="tab" style="height:35px; ${activeTabColour}">
-            <img class="tabFavicon" src="${tab.favIconUrl}">
-            <div class="tabTitleElement">
-                ${santiseInput(tab.title)}
-            </div>
-            <img class="tabIconElement tabAudibleIcon" style="display:${audibleStyle}" src="assets/soundIcon.png">
-            <img class="tabIconElement tabMuteIcon" style="display:${muteStyle}" src="assets/muteIcon.png">
-            <img class="tabIconElement tabCloseIcon" src="assets/closeIcon.png">
-        </div>`,
+        html: `<div class="tab">
+                <div class="tabMain" style="${activeTabColour}">
+                    <img class="tabFavicon" src="${tab.favIconUrl}">
+                    <div class="tabTitleElement">
+                        ${santiseInput(tab.title)}
+                    </div>
+                    <img class="tabIconElement tabAudibleIcon" style="display:${audibleStyle}" src="assets/soundIcon.png">
+                    <img class="tabIconElement tabMuteIcon" style="display:${muteStyle}" src="assets/muteIcon.png">
+                    <img class="tabIconElement tabLoadedIcon" style="display:${tabLoadedIconStyle}" src="assets/loadedIcon.png">
+                    <img class="tabIconElement tabCloseIcon" src="assets/closeIcon.png">
+                </div>
+                <div class="tabContextMenu">
+                    <div class="tabContextMenuItem tabContextDupe">Duplicate in Current Container</div>
+                    <div class="tabContextMenuItem tabNewConatiner">Open in New Container</div>
+                    ${tabLoadedButton}
+                </div>
+            </div>`,
         eventListeners: [{
             type: 'click',
-            className: 'tab',
+            className: 'tabMain',
             func: () => browser.tabs.update(tab.id, {active: true})
         },{
             type: 'click',
             className: 'tabCloseIcon',
             func: () => browser.tabs.remove(tab.id)
+        },{
+            type: 'click',
+            className: 'tabContextDupe',
+            func: () => bp.newTab(tab.contextId, tab.url)
+        },{
+            type: 'click',
+            className: 'tabNewConatiner',
+            func: () => bp.newContainer(tab.url)
+        },{
+            type: 'click',
+            className: 'tabUnload',
+            func: () => {
+                browser.tabs.discard(tab.id)
+                updateSidebar();
+            }
         },{
             type: 'click',
             className: 'tabAudibleIcon',
@@ -179,17 +204,17 @@ const getTabTemplate = tab => {
             }
         },{
             type: 'mouseover',
-            className: 'tab',
+            className: 'tabMain',
             func: {
-                classElementArgs: ['tab', 'tabCloseIcon'],
+                classElementArgs: ['tabMain', 'tabCloseIcon'],
                 args: [],
                 innerfunc: tabOnHover
             }
         },{
             type: 'mouseout',
-            className: 'tab',
+            className: 'tabMain',
             func: {
-                classElementArgs: ['tab', 'tabCloseIcon'],
+                classElementArgs: ['tabMain', 'tabCloseIcon'],
                 args: [],
                 innerfunc: tabOffHover
             }
@@ -229,13 +254,17 @@ const unmuteTab = (tabId, tabAudibleIcon, tabMuteIcon) => () => {
 }
 
 
-const getStaticControlsTemplate = () => ({
+const initSidebarhtml = bp => 
+    addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate(bp));
+
+
+const getStaticControlsTemplate = bp => ({
     html:`<div class="button newPersistentContainerButton">New Persistent Container</div>
     <div class="button toggleAllContainersButton">Toggle</div>`,
     eventListeners: [{
         type: 'click',
         className: 'newPersistentContainerButton',
-        func: () => backgroundPage.newContainer()
+        func: () => bp.newContainer()
     },{
         type: 'click',
         className: 'toggleAllContainersButton',
@@ -243,5 +272,14 @@ const getStaticControlsTemplate = () => ({
     }]
 })
 
-addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate());
+const toggleContextMenu = (tabElement) => {
+    const contextMenuElement = 
+        tabElement.parentNode.getElementsByClassName('tabContextMenu').length !== 0 ?
+            tabElement.parentNode.getElementsByClassName('tabContextMenu')[0] :
+            tabElement.parentNode.parentNode.getElementsByClassName('tabContextMenu')[0]
+
+    contextMenuElement.style.height = contextMenuElement.style.height === '50px' ? '0px' : '50px';
+}
+
+
 
