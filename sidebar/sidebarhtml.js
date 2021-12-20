@@ -6,15 +6,10 @@ const contentElement = document.getElementById('content');
 
 const writehtml = (containers, bp) => {
 
-    containers = sortContainers(containers, bp);
-
     const deletableElement = removeOldElements();
-    containers.forEach(container => {
-        container = addHeightVars(35, container);
+    sortContainers(containers, bp).forEach(container => {
         const containerElement = addElement(deletableElement, getContainerTemplate(container));
-        const containerTitle = addElement(containerElement, getContainerTitleTemplate(container, containerElement, bp));
-        const tabDrawerElement = addElement(containerElement, getTabDrawerTemplate());
-        container.tabs.forEach(tab => addElement(tabDrawerElement, getTabTemplate(tab, bp)));
+        container.tabs.forEach(tab => addElement(containerElement[0], getTabTemplate(tab, bp)));
     })
 }
 
@@ -54,19 +49,6 @@ const removeOldElements = () => {
 }
 
 /*
-    addHeightVars adds the open and closed height as paramaters to the container object.
-    Both are pre converted to strings with the px postfix for ease.
-    openHeight is based off the number of tabs + 1 (for the container title) * the closedHeight,
-    assuming the closedHeight is also used for the height of the tabs.   
- */
-
-const addHeightVars = (closedHeight, container) => {    
-    container.closedHeightPx = `${closedHeight}px`;
-    container.openHeightPx = `${(container.tabs.length * closedHeight) + closedHeight}px`;
-    return container;
-}
-
-/*
     addElement takes a template object, contructs a DOM element and adds it to the provided parent element.  
     Element templates are structured {html: <some html string>, eventListeners: <event listeners to be added to
     the element>}.  
@@ -94,50 +76,30 @@ const addElement = (parent, template) => {
         }
         catch{}
     })
-    // this is why we hate javascript
-    const fc = element.firstChild;
+    const nodeReturn = template.nodeReturn.length ? template.nodeReturn.map(node => element.getElementsByClassName(node)[0]) : null;
     element.replaceWith(element.firstChild);
-    return fc;
+    return nodeReturn;
 }
 
 
 const getContainerTemplate = container => ({
-    html: `<div class="containerElement" 
-        style="border-left:15px solid ${container.contextId.colorCode}; height:${container.openheightPx}"></div>`,
-    eventListeners: []
-})
-
-const getContainerTitleTemplate = (container, containerElement, bp) => ({
-    html: `<div class="containerTitle" style="height:${container.closedHeightPx}">
-            <div class="containerNameElement">
-                ${container.contextId.name}  (${container.tabs.length})
+    html: `<div class="containerElement" style="border-left:15px solid ${container.contextId.colorCode}">
+            <div class="containerTitle">
+                <div class="containerNameElement">
+                    ${container.contextId.name}  (${container.tabs.length})
+                </div>
+                <img class="containerTabButton" src="assets/vectorpaint.svg">
             </div>
-            <img class="containerTabButton" src="assets/vectorpaint.svg">
+            <div class="tabDrawer"></div>
         </div>`,
     eventListeners: [{
         type: 'click',
-        className: 'containerTitle',
-        func: () => toggleContainerElement(containerElement, container)
-    },{
-        type: 'click',
         className: 'containerTabButton',
         func: () => bp.newTab(container.contextId.cookieStoreId)
-    }]
+    }],
+    nodeReturn: ['tabDrawer']
 })
 
-/*
-    Toggles open & close the container element
-*/
-
-const toggleContainerElement = (containerElement, container) => containerElement.style.height = 
-    containerElement.style.height == container.closedHeightPx ?
-    container.openHeightPx : container.closedHeightPx;
-
-
-const getTabDrawerTemplate = () => ({
-    html: '<div class="tabDrawer"></div>',
-    eventListeners: []
-});
 
 const getTabTemplate = (tab, bp) => {
     const activeTabColour = tab.active === true ? 'background-color:#6490b1' : '';
@@ -152,10 +114,10 @@ const getTabTemplate = (tab, bp) => {
                     <div class="tabTitleElement">
                         ${santiseInput(tab.title)}
                     </div>
+                    <img class="tabIconElement tabCloseIcon" src="assets/closeIcon.png">
                     <img class="tabIconElement tabAudibleIcon" style="display:${audibleStyle}" src="assets/soundIcon.png">
                     <img class="tabIconElement tabMuteIcon" style="display:${muteStyle}" src="assets/muteIcon.png">
                     <img class="tabIconElement tabLoadedIcon" style="display:${tabLoadedIconStyle}" src="assets/loadedIcon.png">
-                    <img class="tabIconElement tabCloseIcon" src="assets/closeIcon.png">
                 </div>
                 <div class="tabContextMenu">
                     <div class="tabContextMenuItem tabContextDupe">Duplicate in Current Container</div>
@@ -182,8 +144,8 @@ const getTabTemplate = (tab, bp) => {
         },{
             type: 'click',
             className: 'tabUnload',
-            func: () => {
-                browser.tabs.discard(tab.id)
+            func: async () => {
+                await browser.tabs.discard(tab.id)
                 updateSidebar();
             }
         },{
@@ -219,7 +181,9 @@ const getTabTemplate = (tab, bp) => {
                 innerfunc: tabOffHover
             }
         }
-    ]}
+    ],
+    nodeReturn: []
+    }
 };
 
 const santiseInput = input => input.replace('<', '').replace('>', '');

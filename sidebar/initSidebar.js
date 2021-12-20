@@ -1,7 +1,4 @@
-const bpProm = new Promise((resolve, reject) => {
-    browser.runtime.getBackgroundPage().then(bp => resolve(bp), error => reject(error));
-});
-
+const bpProm = browser.runtime.getBackgroundPage();
 
 const updateSidebar = async () => {
     console.log('update');
@@ -10,6 +7,8 @@ const updateSidebar = async () => {
     const contextualIdentities = await browser.contextualIdentities.query({});
     const cookieStoreObjs = await Promise.all(contextualIdentities.map(async contextId => {
         const contextualIdentityTabs = await browser.tabs.query({ cookieStoreId: contextId.cookieStoreId });
+        const ciwt = Object.assign(contextId, {tabs: contextualIdentityTabs});
+        console.log(ciwt);
         return getCookieStoreObj(contextId, contextualIdentityTabs);
     }))
     const containers = [].concat(getCookieStoreObj(defaultContextIdObj, plainTabs), cookieStoreObjs);
@@ -41,8 +40,6 @@ const defaultContextIdObj = {
 updateSidebar();
 setTimeout(() => bpProm.then(bp => initSidebarhtml(bp)), 100);
 
-//testgitfanciness
-
 browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
     setTimeout(() => updateSidebar(), 200);
 });
@@ -55,11 +52,7 @@ browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
     properties:['attention', 'status']
 });
 
-// let backgroundPage;
-// browser.runtime.getBackgroundPage().then(bp => backgroundPage = bp, error => console.log(error));
-
 document.addEventListener( "contextmenu", function(e) {
-    console.log(e);
     e.preventDefault();
     toggleContextMenu(e.target);
 });
