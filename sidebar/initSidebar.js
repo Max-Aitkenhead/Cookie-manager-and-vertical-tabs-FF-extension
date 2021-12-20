@@ -5,36 +5,28 @@ const updateSidebar = async () => {
     const bp = await bpProm;
     const plainTabs = await browser.tabs.query({cookieStoreId: 'firefox-default'});
     const contextualIdentities = await browser.contextualIdentities.query({});
-    const cookieStoreObjs = await Promise.all(contextualIdentities.map(async contextId => {
+    const ciWithTabs = await Promise.all(contextualIdentities.map(async contextId => {
         const contextualIdentityTabs = await browser.tabs.query({ cookieStoreId: contextId.cookieStoreId });
-        const ciwt = Object.assign(contextId, {tabs: contextualIdentityTabs});
-        console.log(ciwt);
-        return getCookieStoreObj(contextId, contextualIdentityTabs);
+        return Object.assign(contextId, {tabs: contextualIdentityTabs});
     }))
-    const containers = [].concat(getCookieStoreObj(defaultContextIdObj, plainTabs), cookieStoreObjs);
-    checkEmptyContainers(containers);
-    writehtml(containers, bp);
+    const containers = [].concat(defaultContextIdObj(plainTabs), ciWithTabs);
+    const filteredContainers = checkEmptyContainers(containers);
+    writehtml(filteredContainers, bp);
 }
 
 const checkEmptyContainers = containers => {
-    const emptyContainers = containers.filter(container => container.contextId.name.includes('Persistent') && container.tabs.length === 0);
-    if (emptyContainers.length === 0) return false
-    emptyContainers.forEach(filteredContainer => browser.contextualIdentities.remove(filteredContainer.contextId.cookieStoreId));
-    return true;
+    const emptyContainers = containers.filter(container => container.name.includes('Persistent') && container.tabs.length === 0);
+    if (!emptyContainers.length) return containers;
+    emptyContainers.forEach(filteredContainer => browser.contextualIdentities.remove(filteredContainer.cookieStoreId));
+    return containers.filter(container => !(container.name.includes('Persistent') && container.tabs.length === 0));
 }
 
-
-// convenient object made for passing in data to the html builder
-const getCookieStoreObj = (contextId, tabs) => ({
-    contextId: contextId,
-    tabs: tabs
-})
-
-const defaultContextIdObj = {
+const defaultContextIdObj = _tabs => ({
     cookieStoreId: 'firefox-default',
     colorCode: 'black',
-    name: 'No Container'
-};
+    name: 'No Container',
+    tabs: _tabs
+});
 
 
 updateSidebar();

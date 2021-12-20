@@ -23,15 +23,15 @@ const sortContainers = (containers, bp) => {
     //     container.tabs.sort((a, b) => a.url < b.url ? -1 : (a.url > b.url ? 1 : 0)));
 
     const defaultContainer = containers.filter(container => 
-        container.contextId.cookieStoreId == 'firefox-default');
+        container.cookieStoreId == 'firefox-default');
 
     const namedContainers = containers.filter(container => 
-        !container.contextId.name.includes('Persistent') && !container.contextId.name.includes('No Container'));
+        !container.name.includes('Persistent') && !container.name.includes('No Container'));
 
     const persistentContainers = containers.filter(container => 
-        container.contextId.name.includes('Persistent'))
-    .sort((a,b) => bp.getCINameNo(a.contextId.name) < bp.getCINameNo(b.contextId.name) ? -1 : 
-    bp.getCINameNo(a.contextId.name) > bp.getCINameNo(b.contextId.name) ? 1 : 0);
+        container.name.includes('Persistent'))
+    .sort((a,b) => bp.getCINameNo(a.name) < bp.getCINameNo(b.name) ? -1 : 
+    bp.getCINameNo(a.name) > bp.getCINameNo(b.name) ? 1 : 0);
 
     return defaultContainer.concat(namedContainers, persistentContainers);
 }
@@ -83,10 +83,10 @@ const addElement = (parent, template) => {
 
 
 const getContainerTemplate = container => ({
-    html: `<div class="containerElement" style="border-left:15px solid ${container.contextId.colorCode}">
+    html: `<div class="containerElement" style="border-left:15px solid ${container.colorCode}">
             <div class="containerTitle">
                 <div class="containerNameElement">
-                    ${container.contextId.name}  (${container.tabs.length})
+                    ${container.name}  (${container.tabs.length})
                 </div>
                 <img class="containerTabButton" src="assets/vectorpaint.svg">
             </div>
@@ -95,7 +95,7 @@ const getContainerTemplate = container => ({
     eventListeners: [{
         type: 'click',
         className: 'containerTabButton',
-        func: () => bp.newTab(container.contextId.cookieStoreId)
+        func: () => bp.newTab(container.cookieStoreId)
     }],
     nodeReturn: ['tabDrawer']
 })
