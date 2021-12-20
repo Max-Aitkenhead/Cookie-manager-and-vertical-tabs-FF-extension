@@ -223,16 +223,11 @@ const initSidebarhtml = bp =>
 
 
 const getStaticControlsTemplate = bp => ({
-    html:`<div class="button newPersistentContainerButton">New Persistent Container</div>
-    <div class="button toggleAllContainersButton">Toggle</div>`,
+    html:`<div class="button newPersistentContainerButton">New Persistent Container</div>`,
     eventListeners: [{
         type: 'click',
         className: 'newPersistentContainerButton',
         func: () => bp.newContainer()
-    },{
-        type: 'click',
-        className: 'toggleAllContainersButton',
-        func: () => {}
     }]
 })
 
