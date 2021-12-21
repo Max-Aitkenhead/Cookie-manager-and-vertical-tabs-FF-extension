@@ -105,7 +105,7 @@ const getTabTemplate = (tab, bp) => {
     const activeTabColour = tab.active === true ? 'background-color:#6490b1' : '';
     const muteStyle = tab.mutedInfo.muted ? 'flex' : 'none';
     const audibleStyle = tab.audible ? 'flex' : 'none';
-    const tabLoadedButton = tab.discarded ? '' : '<div class="tabContextMenuItem tabUnload">Unload</div>';
+    const tabLoadedButton = tab.discarded & !tab.active ? '' : '<div class="tabContextMenuItem tabUnload">Unload</div>';
     const tabLoadedIconStyle = tab.discarded ? 'none' : 'flex';
     return {
         html: `<div class="tab">
