@@ -1,3 +1,5 @@
+'use strict';
+
 browser.menus.create({
     id: 'openInNewContainer',
     contexts: ['link'],

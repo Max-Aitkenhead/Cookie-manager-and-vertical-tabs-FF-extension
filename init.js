@@ -1,7 +1,12 @@
+'use strict';
+
+// adds event listener for tabs sidebar
 browser.commands.onCommand.addListener(command => command === 'toggle_sidebar' ? browser.sidebarAction.toggle() : void(0));
 
+// calls cookie cleaner when a tab is removed
 browser.tabs.onRemoved.addListener((tabId, removeInfo) => clean());
 
+// calls cookie cleaner when tabs are updated
 browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
     if (updateInfo.hasOwnProperty('attention') && updateInfo.attention === false)
         clean();
@@ -9,6 +14,7 @@ browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
     properties:['attention']
 });
 
+// blocks certain http requests
 browser.webRequest.onBeforeRequest.addListener(async requestDetails => {
         const cancel = (returnVal = true) => {
             if (!returnVal) return { cancel: false }
@@ -21,6 +27,7 @@ browser.webRequest.onBeforeRequest.addListener(async requestDetails => {
         }
         // allow iframes in nebula container
         if (requestDetails.originUrl.includes('nebula')) return { cancel: false };
+        if (requestDetails.url.includes('reddit.com/message')) return { cancel: false };
         // block iframes in the default container
         if (requestDetails.cookieStoreId === 'firefox-default') return cancel();
         // block iframes in named containers but not in persistent containers

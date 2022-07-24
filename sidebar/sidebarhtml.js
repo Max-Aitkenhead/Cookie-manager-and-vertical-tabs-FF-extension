@@ -1,9 +1,11 @@
 const contentElement = document.getElementById('content');
 
-/*
+/**
     writehtml is the high level flow for generating the html in the sidebar
-*/
 
+ * @param {Object} containers - list of container to draw
+ * @param {Object} bp - background page provided by the browser
+ */
 const writehtml = (containers, bp) => {
 
     const deletableElement = removeOldElements();
@@ -95,7 +97,7 @@ const getContainerTemplate = container => ({
     eventListeners: [{
         type: 'click',
         className: 'containerTabButton',
-        func: () => bp.newTab(container.cookieStoreId)
+        func: () => newTab(container.cookieStoreId)
     }],
     nodeReturn: ['tabDrawer']
 })

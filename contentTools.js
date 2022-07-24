@@ -1,3 +1,5 @@
+'use strict';
+
 browser.runtime.onMessage.addListener((message, sender) => {
     if (message.clearLocalStorage) {
         localStorage.clear();

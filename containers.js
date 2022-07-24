@@ -1,3 +1,5 @@
+'use strict';
+
 const containerColours = [
     "green",
     "yellow",

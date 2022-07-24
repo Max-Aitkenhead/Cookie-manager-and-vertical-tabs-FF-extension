@@ -1,3 +1,5 @@
+'use strict';
+
 const bpProm = browser.runtime.getBackgroundPage();
 
 const updateSidebar = async () => {
@@ -9,7 +11,7 @@ const updateSidebar = async () => {
         const contextualIdentityTabs = await browser.tabs.query({ cookieStoreId: contextId.cookieStoreId });
         return Object.assign(contextId, {tabs: contextualIdentityTabs});
     }))
-    const containers = [].concat(defaultContextIdObj(plainTabs), ciWithTabs);
+    const containers = [...defaultContextIdObj(plainTabs), ...ciWithTabs];
     const filteredContainers = checkEmptyContainers(containers);
     writehtml(filteredContainers, bp);
 }
