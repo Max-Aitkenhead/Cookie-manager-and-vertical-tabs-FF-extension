@@ -38,7 +38,6 @@ const sortContainers = (containers) => {
     .sort((a,b) => getCINameNo(a.name) < getCINameNo(b.name) ? -1 : 
     getCINameNo(a.name) > getCINameNo(b.name) ? 1 : 0);
     
-    console.log(persistentContainers);
     return defaultContainer.concat(namedContainers, persistentContainers);
 }
 
@@ -143,7 +142,7 @@ const getTabTemplate = tab => {
         },{
             type: 'click',
             className: 'tabContextDupe',
-            func: () => newTab(tab.contextId, tab.url)
+            func: () => newTab(tab.cookieStoreId, tab.url)
         },{
             type: 'click',
             className: 'tabNewConatiner',
@@ -282,11 +281,14 @@ const newContainer = async (url = 'about:blank') => {
     newTab(newContextd.cookieStoreId, url);
 }
 
-const newTab = (cookieStoreId, url = 'about:blank') => browser.tabs.create({
+const newTab = (cookieStoreId, url = 'about:blank') => {
+    console.log(cookieStoreId);
+    browser.tabs.create({
     active: true,
     cookieStoreId: cookieStoreId,
     url:url
 });
+}
 
 const getContextIds = () => browser.contextualIdentities.query({});
 

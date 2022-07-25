@@ -10,7 +10,6 @@ const updateSidebar = async () => {
     }))
     const containers = [defaultContextIdObj(plainTabs), ...ciWithTabs];
     const filteredContainers = checkEmptyContainers(containers);
-    console.log('jjjjjj');
     writehtml(filteredContainers);
 
 }
