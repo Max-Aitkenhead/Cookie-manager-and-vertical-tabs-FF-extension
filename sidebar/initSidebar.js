@@ -1,10 +1,7 @@
 'use strict';
 
-const bpProm = browser.runtime.getBackgroundPage();
-
 const updateSidebar = async () => {
     console.log('update');
-    const bp = await bpProm;
     const plainTabs = await browser.tabs.query({cookieStoreId: 'firefox-default'});
     const contextualIdentities = await browser.contextualIdentities.query({});
     const ciWithTabs = await Promise.all(contextualIdentities.map(async contextId => {
@@ -13,7 +10,7 @@ const updateSidebar = async () => {
     }))
     const containers = [defaultContextIdObj(plainTabs), ...ciWithTabs];
     const filteredContainers = checkEmptyContainers(containers);
-    writehtml(filteredContainers, bp);
+    writehtml(filteredContainers);
 }
 
 const checkEmptyContainers = containers => {
@@ -31,7 +28,7 @@ const defaultContextIdObj = _tabs => ({
 });
 
 updateSidebar();
-setTimeout(() => bpProm.then(bp => initSidebarhtml(bp)), 100);
+// setTimeout(() => bpProm.then(bp => initSidebarhtml(bp)), 100);
 
 browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
     setTimeout(() => updateSidebar(), 200);

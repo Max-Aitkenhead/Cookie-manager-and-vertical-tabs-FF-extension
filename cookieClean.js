@@ -21,12 +21,13 @@ const clearDefaultCookies = async () => {
  * This is not as important now thanks to total cookie protection
  */
 const clearNamedCookies = async () => {
-    const contextIds = await browser.contextualIdentities.query({})
-    const persistentCIs = contextIds.filter(contextId => !contextId.name.includes('Persistent'))
-    persistentCIs.forEach(contextId => browser.cookies.getAll({storeId: contextId.cookieStoreId}).then(cookies => cookies
-    .filter(cookie => !cookie.domain.includes(contextId.name.toLowerCase()))
-    .forEach(cookie => removeCookie(cookie))))
-
+    const contextIds = await browser.contextualIdentities.query({});
+    const persistentCIs = contextIds.filter(contextId => !contextId.name.includes('Persistent'));
+    persistentCIs.forEach(async contextId => {
+        const cookies = await browser.cookies.getAll({storeId: contextId.cookieStoreId});
+        const cookiesToRemove = cookies.filter(cookie => !cookie.domain.includes(contextId.name.toLowerCase()));
+        cookiesToRemove.forEach(cookie => removeCookie(cookie));
+    })
 };
 
 /**
@@ -44,7 +45,7 @@ const clearIndexDB = () => browser.browsingData.remove({
         cookieStoreId: 'firefox-default'
     },{
         indexedDB: true,
-        cache: true,
+        // cache: true,
         serverBoundCertificates: true,
         serviceWorkers: true,
         formData: true

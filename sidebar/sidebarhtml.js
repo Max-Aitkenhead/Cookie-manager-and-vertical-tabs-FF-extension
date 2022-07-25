@@ -1,18 +1,22 @@
+'use strict';
+
 const contentElement = document.getElementById('content');
 
 /**
     writehtml is the high level flow for generating the html in the sidebar
 
  * @param {Object} containers - list of container to draw
- * @param {Object} bp - background page provided by the browser
  */
-const writehtml = (containers, bp) => {
+const writehtml = (containers) => {
 
     const deletableElement = removeOldElements();
-    sortContainers(containers, bp).forEach(container => {
+    sortContainers(containers).forEach(container => {
         const containerElement = addElement(deletableElement, getContainerTemplate(container));
-        container.tabs.forEach(tab => addElement(containerElement[0], getTabTemplate(tab, bp)));
+        container.tabs.forEach(tab => addElement(containerElement[0], getTabTemplate(tab)));
     })
+
+    initSidebarhtml();
+
 }
 
 /*
@@ -20,9 +24,10 @@ const writehtml = (containers, bp) => {
     Persistent containers (sorted by number).  All tabs are also sorted alphabetically by domain within the containers.  
 */
 
-const sortContainers = (containers, bp) => {
+const sortContainers = (containers) => {
     // sortedContainers.forEach(container => 
     //     container.tabs.sort((a, b) => a.url < b.url ? -1 : (a.url > b.url ? 1 : 0)));
+
 
     const defaultContainer = containers.filter(container => 
         container.cookieStoreId == 'firefox-default');
@@ -32,9 +37,10 @@ const sortContainers = (containers, bp) => {
 
     const persistentContainers = containers.filter(container => 
         container.name.includes('Persistent'))
-    .sort((a,b) => bp.getCINameNo(a.name) < bp.getCINameNo(b.name) ? -1 : 
-    bp.getCINameNo(a.name) > bp.getCINameNo(b.name) ? 1 : 0);
-
+    .sort((a,b) => getCINameNo(a.name) < getCINameNo(b.name) ? -1 : 
+    getCINameNo(a.name) > getCINameNo(b.name) ? 1 : 0);
+    
+    console.log(persistentContainers);
     return defaultContainer.concat(namedContainers, persistentContainers);
 }
 
@@ -98,12 +104,13 @@ const getContainerTemplate = container => ({
         type: 'click',
         className: 'containerTabButton',
         func: () => newTab(container.cookieStoreId)
+        
     }],
     nodeReturn: ['tabDrawer']
 })
 
 
-const getTabTemplate = (tab, bp) => {
+const getTabTemplate = tab => {
     const activeTabColour = tab.active === true ? 'background-color:#6490b1' : '';
     const muteStyle = tab.mutedInfo.muted ? 'flex' : 'none';
     const audibleStyle = tab.audible ? 'flex' : 'none';
@@ -138,11 +145,11 @@ const getTabTemplate = (tab, bp) => {
         },{
             type: 'click',
             className: 'tabContextDupe',
-            func: () => bp.newTab(tab.contextId, tab.url)
+            func: () => newTab(tab.contextId, tab.url)
         },{
             type: 'click',
             className: 'tabNewConatiner',
-            func: () => bp.newContainer(tab.url)
+            func: () => newContainer(tab.url)
         },{
             type: 'click',
             className: 'tabUnload',
@@ -220,16 +227,18 @@ const unmuteTab = (tabId, tabAudibleIcon, tabMuteIcon) => () => {
 }
 
 
-const initSidebarhtml = bp => 
-    addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate(bp));
+const initSidebarhtml = () => {
+    addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate());
+    console.log('weird');
+}
 
 
-const getStaticControlsTemplate = bp => ({
+const getStaticControlsTemplate = () => ({
     html:`<div class="button newPersistentContainerButton">New Persistent Container</div>`,
     eventListeners: [{
         type: 'click',
         className: 'newPersistentContainerButton',
-        func: () => bp.newContainer()
+        func: () => newContainer()
     }]
 })
 
@@ -241,6 +250,48 @@ const toggleContextMenu = (tabElement) => {
 
     contextMenuElement.style.height = contextMenuElement.style.height === '50px' ? '0px' : '50px';
 }
+
+const containerColours = [
+    "green",
+    "yellow",
+    "orange",
+    "pink",
+    "red",
+    "purple",
+    "blue",
+    "turquoise"
+];
+
+// extracts number from contextId name, slice an extra digit if the length ia longer
+const getCINameNo = CIname => parseInt(CIname.length === 20 ? CIname.slice(-1) : CIname.slice(-2));
+
+ // finds the lowest possible number for a new container not currently in use
+const getNewContainerNum = (contextIds, n = 0) => contextIds.filter(contextId => 
+        getCINameNo(contextId.name) === n).length < 1 ? n : getNewContainerNum(contextIds, n + 1);
+
+
+// cycles through the colours when creating tabs
+const getNewContainerColour = n => containerColours[n % containerColours.length];
+
+const newContainer = async (url = 'about:blank') => {
+    const contextIds = await browser.contextualIdentities.query({});
+    const containerNo = getNewContainerNum(contextIds);
+    const newContextd = await browser.contextualIdentities.create({
+            name: `Persistent Cookies ${containerNo}`,
+            color: getNewContainerColour(containerNo),
+            icon: 'circle'
+    });
+    newTab(newContextd.cookieStoreId, url);
+}
+
+const newTab = (cookieStoreId, url = 'about:blank') => browser.tabs.create({
+    active: true,
+    cookieStoreId: cookieStoreId,
+    url:url
+});
+
+const getContextIds = () => browser.contextualIdentities.query({});
+
 
 
 

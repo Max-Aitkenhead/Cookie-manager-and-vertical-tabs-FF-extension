@@ -12,7 +12,7 @@ const containerColours = [
 ];
 
 // extracts number from contextId name, slice an extra digit if the length ia longer
-var getCINameNo = CIname => parseInt(CIname.length === 20 ? CIname.slice(-1) : CIname.slice(-2));
+const getCINameNo = CIname => parseInt(CIname.length === 20 ? CIname.slice(-1) : CIname.slice(-2));
 
  // finds the lowest possible number for a new container not currently in use
 const getNewContainerNum = (contextIds, n = 0) => contextIds.filter(contextId => 
@@ -22,7 +22,7 @@ const getNewContainerNum = (contextIds, n = 0) => contextIds.filter(contextId =>
 // cycles through the colours when creating tabs
 const getNewContainerColour = n => containerColours[n % containerColours.length];
 
-var newContainer = (url = 'about:blank') => {
+const newContainer = (url = 'about:blank') => {
         browser.contextualIdentities.query({}).then(contextIds => {
             const containerNo = getNewContainerNum(contextIds);
             browser.contextualIdentities.create({
@@ -33,11 +33,14 @@ var newContainer = (url = 'about:blank') => {
     });
 }
 
-var newTab = (cookieStoreId, url = 'about:blank') => browser.tabs.create({
+const newTab = (cookieStoreId, url = 'about:blank') => {
+    console.log('newtab');
+    browser.tabs.create({
     active: true,
     cookieStoreId: cookieStoreId,
     url:url
-});
+})
+};
 
 const getContextIds = () => browser.contextualIdentities.query({});
 
