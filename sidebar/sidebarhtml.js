@@ -14,10 +14,8 @@ const writehtml = (containers) => {
         const containerElement = addElement(deletableElement, getContainerTemplate(container));
         container.tabs.forEach(tab => addElement(containerElement[0], getTabTemplate(tab)));
     })
-
-    initSidebarhtml();
-
 }
+
 
 /*
     sortContainers does what it says on the tin.  Containers follow order: default container -> named containers ->
@@ -228,19 +226,19 @@ const unmuteTab = (tabId, tabAudibleIcon, tabMuteIcon) => () => {
 
 
 const initSidebarhtml = () => {
-    addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate());
-    console.log('weird');
+    addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate);
 }
 
 
-const getStaticControlsTemplate = () => ({
+const getStaticControlsTemplate = {
     html:`<div class="button newPersistentContainerButton">New Persistent Container</div>`,
     eventListeners: [{
         type: 'click',
         className: 'newPersistentContainerButton',
         func: () => newContainer()
     }]
-})
+}
+
 
 const toggleContextMenu = (tabElement) => {
     const contextMenuElement = 

@@ -10,7 +10,9 @@ const updateSidebar = async () => {
     }))
     const containers = [defaultContextIdObj(plainTabs), ...ciWithTabs];
     const filteredContainers = checkEmptyContainers(containers);
+    console.log('jjjjjj');
     writehtml(filteredContainers);
+
 }
 
 const checkEmptyContainers = containers => {
@@ -28,7 +30,7 @@ const defaultContextIdObj = _tabs => ({
 });
 
 updateSidebar();
-// setTimeout(() => bpProm.then(bp => initSidebarhtml(bp)), 100);
+setTimeout(() => initSidebarhtml(), 100);
 
 browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
     setTimeout(() => updateSidebar(), 200);
