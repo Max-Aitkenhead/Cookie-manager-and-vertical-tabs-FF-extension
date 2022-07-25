@@ -11,7 +11,7 @@ const updateSidebar = async () => {
         const contextualIdentityTabs = await browser.tabs.query({ cookieStoreId: contextId.cookieStoreId });
         return Object.assign(contextId, {tabs: contextualIdentityTabs});
     }))
-    const containers = [...defaultContextIdObj(plainTabs), ...ciWithTabs];
+    const containers = [defaultContextIdObj(plainTabs), ...ciWithTabs];
     const filteredContainers = checkEmptyContainers(containers);
     writehtml(filteredContainers, bp);
 }
@@ -29,7 +29,6 @@ const defaultContextIdObj = _tabs => ({
     name: 'No Container',
     tabs: _tabs
 });
-
 
 updateSidebar();
 setTimeout(() => bpProm.then(bp => initSidebarhtml(bp)), 100);

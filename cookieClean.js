@@ -20,7 +20,7 @@ const clearDefaultCookies = async () => {
  * Find persistent containers, then for each find the cookies which belong to a different domain and remove them
  * This is not as important now thanks to total cookie protection
  */
-const clearNamedCookies = () => {
+const clearNamedCookies = async () => {
     const contextIds = await browser.contextualIdentities.query({})
     const persistentCIs = contextIds.filter(contextId => !contextId.name.includes('Persistent'))
     persistentCIs.forEach(contextId => browser.cookies.getAll({storeId: contextId.cookieStoreId}).then(cookies => cookies
@@ -51,6 +51,6 @@ const clearIndexDB = () => browser.browsingData.remove({
     }
 );
 
-const clearLocalStorage = () => browser.tabs.query({ cookieStoreId: 'firefox-default' }).then(tabs => tabs
-    .forEach(tab => browser.tabs.sendMessage(tab.id, { clearLocalStorage: true })));
+// const clearLocalStorage = () => browser.tabs.query({ cookieStoreId: 'firefox-default' }).then(tabs => tabs
+//     .forEach(tab => browser.tabs.sendMessage(tab.id, { clearLocalStorage: true })));
     
