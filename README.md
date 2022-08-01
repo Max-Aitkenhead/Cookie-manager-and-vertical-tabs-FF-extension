@@ -11,7 +11,7 @@
 <ul>
 <li>Creating new containers</li>
 <li>Creating new tabs in a specified container</li>
-<li>Duplicating tabs a new temporary container</li>
+<li>Duplicating tabs in a new temporary container</li>
 <li>Duplicating tabs in the current container</li>
 <li>Unloading tabs - useful for controlling memory usage when opening large numbers of tabs</li>
 <li>Toggling tab mute</li>
