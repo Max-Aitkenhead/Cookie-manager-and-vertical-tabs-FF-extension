@@ -25,14 +25,19 @@ browser.webRequest.onBeforeRequest.addListener(async requestDetails => {
             );
             return { cancel: true };
         }
+
+        if (requestDetails.originUrl.includes('typekit')) {
+            return cancel();
+
+        }
         // allow iframes in nebula container
         if (requestDetails.originUrl.includes('nebula')) return { cancel: false };
         if (requestDetails.url.includes('reddit.com/message')) return { cancel: false };
         // block iframes in the default container
         if (requestDetails.cookieStoreId === 'firefox-default') return cancel();
         // block iframes in named containers but not in persistent containers
-        return await browser.contextualIdentities.get(requestDetails.cookieStoreId)
-        .then(contextId => cancel(!contextId.name.includes('Persistent')));
+        const contextId = await browser.contextualIdentities.get(requestDetails.cookieStoreId)
+        return cancel(!contextId.name.includes('Persistent'))
     },
     {
         types: ["sub_frame", "object"],
@@ -47,6 +52,16 @@ browser.webRequest.onBeforeRequest.addListener(() => ({ cancel: true }),
         urls: ["<all_urls>"],
     },
     ["blocking"]
+);
+
+browser.webRequest.onBeforeRequest.addListener(requestBody => {
+        console.log(requestBody);
+        return { cancel: true }
+    },
+    {
+        urls: ["https://use.typekit.net/*"],
+    },
+    ["blocking", "requestBody"]
 );
 
 // experimental blocking all javascript in default container

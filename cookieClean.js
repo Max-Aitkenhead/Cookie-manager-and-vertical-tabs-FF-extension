@@ -39,7 +39,7 @@ const removeCookie = cookie => browser.cookies.remove({
         storeId: cookie.storeId,
         name: cookie.name,
         url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`
-    }).then(response => console.log(response));
+    }).then(response => {});
 
 const clearIndexDB = () => browser.browsingData.remove({
         cookieStoreId: 'firefox-default'
