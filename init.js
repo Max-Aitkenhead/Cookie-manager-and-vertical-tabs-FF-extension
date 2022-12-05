@@ -26,10 +26,14 @@ browser.webRequest.onBeforeRequest.addListener(async requestDetails => {
             return { cancel: true };
         }
 
-        if (requestDetails.originUrl.includes('typekit')) {
+        if (requestDetails.originUrl.includes('typekit')) 
             return cancel();
 
+        if (requestDetails.originUrl.includes('arcgis')){
+            console.log('arcgis');
+            return cancel();
         }
+        
         // allow iframes in nebula container
         if (requestDetails.originUrl.includes('nebula')) return { cancel: false };
         if (requestDetails.url.includes('reddit.com/message')) return { cancel: false };
@@ -59,7 +63,7 @@ browser.webRequest.onBeforeRequest.addListener(requestBody => {
         return { cancel: true }
     },
     {
-        urls: ["https://use.typekit.net/*"],
+        urls: ["https://use.typekit.net/*", "https://js.arcgis.com/*"],
     },
     ["blocking", "requestBody"]
 );
