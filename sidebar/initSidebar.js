@@ -11,7 +11,6 @@ const updateSidebar = async () => {
     const containers = [defaultContextIdObj(plainTabs), ...ciWithTabs];
     const filteredContainers = checkEmptyContainers(containers);
     writehtml(filteredContainers);
-
 }
 
 const checkEmptyContainers = containers => {
@@ -35,12 +34,8 @@ browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
     setTimeout(() => updateSidebar(), 200);
 });
 
-browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
-    if (updateInfo.hasOwnProperty('status') && updateInfo.status !== 'loading')
-        return;
+browser.tabs.onActivated.addListener(() => {
     updateSidebar();
-}, {
-    properties:['attention', 'status']
 });
 
 document.addEventListener( "contextmenu", function(e) {

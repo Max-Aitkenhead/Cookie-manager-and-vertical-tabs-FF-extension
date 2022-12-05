@@ -8,6 +8,8 @@ const clean = () => {
     clearLocalStorage();
 }
 
+
+
 /**
  * Finds all non container cookies and deletes them
  */
@@ -17,7 +19,7 @@ const clearDefaultCookies = async () => {
 };
 
 /**
- * Find persistent containers, then for each find the cookies which belong to a different domain and remove them
+ * Find named containers, then for each find the cookies which belong to a different domain and remove them
  * This is not as important now thanks to total cookie protection
  */
 const clearNamedCookies = async () => {
@@ -25,10 +27,16 @@ const clearNamedCookies = async () => {
     const persistentCIs = contextIds.filter(contextId => !contextId.name.includes('Persistent'));
     persistentCIs.forEach(async contextId => {
         const cookies = await browser.cookies.getAll({storeId: contextId.cookieStoreId});
-        const cookiesToRemove = cookies.filter(cookie => !cookie.domain.includes(contextId.name.toLowerCase()));
+        const customContainerConfig = containerConfig.customNamedContainers.find(cnc => contextId.name.toLowerCase() === cnc.name);
+        const cookiesToRemove = cookies.filter(cookie => {
+            if(customContainerConfig === undefined) return !cookie.domain.includes(contextId.name.toLowerCase());
+            return customContainerConfig.whiteListDomains.reduce((a, b) => !cookie.domain.includes(b) && a, true);
+        })
         cookiesToRemove.forEach(cookie => removeCookie(cookie));
     })
 };
+
+
 
 /**
  * Deletes a cookie

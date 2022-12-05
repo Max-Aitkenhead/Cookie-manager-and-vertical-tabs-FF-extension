@@ -1,5 +1,8 @@
 'use strict';
 
+let containerConfig;
+fetch('containerConfig.json').then(response => response.json().then(json => containerConfig = json));
+
 // adds event listener for tabs sidebar
 browser.commands.onCommand.addListener(command => command === 'toggle_sidebar' ? browser.sidebarAction.toggle() : void(0));
 
@@ -7,11 +10,8 @@ browser.commands.onCommand.addListener(command => command === 'toggle_sidebar' ?
 browser.tabs.onRemoved.addListener((tabId, removeInfo) => clean());
 
 // calls cookie cleaner when tabs are updated
-browser.tabs.onUpdated.addListener((tabId, updateInfo, tabInfo) => {
-    if (updateInfo.hasOwnProperty('attention') && updateInfo.attention === false)
-        clean();
-}, {
-    properties:['attention']
+browser.tabs.onActivated.addListener((tabId, updateInfo, tabInfo) => {
+    clean();
 });
 
 // blocks certain http requests

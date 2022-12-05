@@ -113,10 +113,12 @@ const getTabTemplate = tab => {
     const audibleStyle = tab.audible ? 'flex' : 'none';
     const tabLoadedButton = tab.discarded & !tab.active ? '' : '<div class="tabContextMenuItem tabUnload">Unload</div>';
     const tabLoadedIconStyle = tab.discarded ? 'none' : 'flex';
+    const safeTabFaviconUrl = tab.favIconUrl !== undefined && !tab.favIconUrl.includes('data:image') ? '' : tab.favIconUrl;
+    
     return {
         html: `<div class="tab">
                 <div class="tabMain" style="${activeTabColour}">
-                    <img class="tabFavicon" src="${tab.favIconUrl}">
+                    <img class="tabFavicon" src="${safeTabFaviconUrl}">
                     <div class="tabTitleElement">
                         ${santiseInput(tab.title)}
                     </div>
@@ -235,7 +237,8 @@ const getStaticControlsTemplate = {
         type: 'click',
         className: 'newPersistentContainerButton',
         func: () => newContainer()
-    }]
+    }],
+    nodeReturn: []
 }
 
 
