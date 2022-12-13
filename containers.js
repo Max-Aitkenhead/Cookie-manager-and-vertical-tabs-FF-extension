@@ -22,25 +22,30 @@ const getNewContainerNum = (contextIds, n = 0) => contextIds.filter(contextId =>
 // cycles through the colours when creating tabs
 const getNewContainerColour = n => containerColours[n % containerColours.length];
 
-const newContainer = (url = 'about:blank') => {
-    browser.contextualIdentities.query({}).then(contextIds => {
-        const containerNo = getNewContainerNum(contextIds);
-        browser.contextualIdentities.create({
-            name: `Persistent Cookies ${containerNo}`,
-            color: getNewContainerColour(containerNo),
-            icon: 'circle'
-        }).then(ci => newTab(ci.cookieStoreId, url));
-    });
+const newContainer = async (url = 'about:blank') => {
+    const contextualIdentities = await browser.contextualIdentities.query({});
+    const containerNo = getNewContainerNum(contextualIdentities);
+    const newContextualIdentity = await browser.contextualIdentities.create({
+        name: `Persistent Cookies ${containerNo}`,
+        color: getNewContainerColour(containerNo),
+        icon: 'circle'
+    })
+    await newTab(newContextualIdentity.cookieStoreId, url);
 }
 
-const newTab = (cookieStoreId, url = 'about:blank') => {
-    console.log('newtab');
-    browser.tabs.create({
+const newTab = async (cookieStoreId, url = 'about:blank') => {
+    await browser.tabs.create({
         active: true,
         cookieStoreId: cookieStoreId,
-        url: url
-    })
+        url: url,
+    });
 };
 
-const getContextIds = () => browser.contextualIdentities.query({});
+const removeEmptyContainers = async () => {
+    const contextIds = await browser.contextualIdentities.query({});
+    contextIds.filter(contextId => contextId.name.includes('Persistent')).forEach(async contextId => {
+        const tabsInContextId = await browser.tabs.query({cookieStoreId: contextId.cookieStoreId});
+        if (!tabsInContextId.length) browser.contextualIdentities.remove(contextId.cookieStoreId);
+    });
+}
 

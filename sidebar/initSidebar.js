@@ -1,23 +1,17 @@
 'use strict';
 
 const updateSidebar = async () => {
-    console.log('update');
-    const plainTabs = await browser.tabs.query({cookieStoreId: 'firefox-default'});
+    const windowInfo = await browser.windows.getCurrent({ populate: true });
+    console.log('updateTabBar');
+    const plainTabs = await browser.tabs.query({cookieStoreId: 'firefox-default', windowId: windowInfo.id});
     const contextualIdentities = await browser.contextualIdentities.query({});
-    const ciWithTabs = await Promise.all(contextualIdentities.map(async contextId => {
-        const contextualIdentityTabs = await browser.tabs.query({ cookieStoreId: contextId.cookieStoreId });
-        return Object.assign(contextId, {tabs: contextualIdentityTabs});
-    }))
+    const ciWithTabs = contextualIdentities.flatMap(contextId => {
+        const contextualIdentityTabs = windowInfo.tabs.filter(tab => tab.cookieStoreId === contextId.cookieStoreId);
+        if (!contextualIdentityTabs.length) return []; // if no tabs in current window, don't show the container
+        return { ...contextId, tabs: contextualIdentityTabs };
+    });
     const containers = [defaultContextIdObj(plainTabs), ...ciWithTabs];
-    const filteredContainers = checkEmptyContainers(containers);
-    writehtml(filteredContainers);
-}
-
-const checkEmptyContainers = containers => {
-    const emptyContainers = containers.filter(container => container.name.includes('Persistent') && container.tabs.length === 0);
-    if (!emptyContainers.length) return containers;
-    emptyContainers.forEach(filteredContainer => browser.contextualIdentities.remove(filteredContainer.cookieStoreId));
-    return containers.filter(container => !(container.name.includes('Persistent') && container.tabs.length === 0));
+    writehtml(containers);
 }
 
 const defaultContextIdObj = _tabs => ({

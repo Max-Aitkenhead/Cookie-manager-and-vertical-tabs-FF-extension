@@ -3,16 +3,27 @@
 let containerConfig;
 fetch('containerConfig.json').then(response => response.json().then(json => containerConfig = json));
 
+const update = async () => {
+    console.log('update');
+    await clean();
+
+    Promise.all([
+        removeEmptyContainers()
+    ]);
+}
+
 // adds event listener for tabs sidebar
-browser.commands.onCommand.addListener(command => command === 'toggle_sidebar' ? browser.sidebarAction.toggle() : void(0));
+browser.commands.onCommand.addListener(command => command === 'toggle_sidebar' ? browser.sidebarAction.toggle() : void(0)); 
 
 // calls cookie cleaner when a tab is removed
-browser.tabs.onRemoved.addListener((tabId, removeInfo) => clean());
+browser.tabs.onRemoved.addListener((tabId, removeInfo) => update());
 
 // calls cookie cleaner when tabs are updated
-browser.tabs.onActivated.addListener((tabId, updateInfo, tabInfo) => {
-    clean();
-});
+browser.tabs.onActivated.addListener((tabId, updateInfo, tabInfo) => update());
+
+// calls cookie cleaner when tabs are created
+browser.tabs.onCreated.addListener(tab => update());
+
 
 // blocks certain http requests
 browser.webRequest.onBeforeRequest.addListener(async requestDetails => {
@@ -56,16 +67,6 @@ browser.webRequest.onBeforeRequest.addListener(() => ({ cancel: true }),
         urls: ["<all_urls>"],
     },
     ["blocking"]
-);
-
-browser.webRequest.onBeforeRequest.addListener(requestBody => {
-        console.log(requestBody);
-        return { cancel: true }
-    },
-    {
-        urls: ["https://use.typekit.net/*", "https://js.arcgis.com/*"],
-    },
-    ["blocking", "requestBody"]
 );
 
 // experimental blocking all javascript in default container

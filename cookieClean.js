@@ -1,11 +1,14 @@
 'use strict';
 
-const clean = () => {
-    console.log('clean');
-    clearDefaultCookies();
-    clearNamedCookies();
-    clearIndexDB();
-    clearLocalStorage();
+const clean = async () => {
+
+    await Promise.all([
+        clearDefaultCookies(),
+        clearNamedCookies(),
+    ]); 
+
+    // clearIndexDB();
+    // clearLocalStorage();
 }
 
 
@@ -26,10 +29,10 @@ const clearNamedCookies = async () => {
     const contextIds = await browser.contextualIdentities.query({});
     const persistentCIs = contextIds.filter(contextId => !contextId.name.includes('Persistent'));
     persistentCIs.forEach(async contextId => {
-        const cookies = await browser.cookies.getAll({storeId: contextId.cookieStoreId});
+        const cookies = await browser.cookies.getAll({ storeId: contextId.cookieStoreId });
         const customContainerConfig = containerConfig.customNamedContainers.find(cnc => contextId.name.toLowerCase() === cnc.name);
         const cookiesToRemove = cookies.filter(cookie => {
-            if(customContainerConfig === undefined) return !cookie.domain.includes(contextId.name.toLowerCase());
+            if (customContainerConfig === undefined) return !cookie.domain.includes(contextId.name.toLowerCase());
             return customContainerConfig.whiteListDomains.reduce((a, b) => !cookie.domain.includes(b) && a, true);
         })
         cookiesToRemove.forEach(cookie => removeCookie(cookie));
@@ -44,22 +47,22 @@ const clearNamedCookies = async () => {
  * @returns 
  */
 const removeCookie = cookie => browser.cookies.remove({
-        storeId: cookie.storeId,
-        name: cookie.name,
-        url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`
-    }).then(response => {});
+    storeId: cookie.storeId,
+    name: cookie.name,
+    url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`
+}).then(response => { });
 
 const clearIndexDB = () => browser.browsingData.remove({
-        cookieStoreId: 'firefox-default'
-    },{
-        indexedDB: true,
-        // cache: true,
-        serverBoundCertificates: true,
-        serviceWorkers: true,
-        formData: true
-    }
+    cookieStoreId: 'firefox-default'
+}, {
+    indexedDB: true,
+    // cache: true,
+    serverBoundCertificates: true,
+    serviceWorkers: true,
+    formData: true
+}
 );
 
 // const clearLocalStorage = () => browser.tabs.query({ cookieStoreId: 'firefox-default' }).then(tabs => tabs
 //     .forEach(tab => browser.tabs.sendMessage(tab.id, { clearLocalStorage: true })));
-    
+
