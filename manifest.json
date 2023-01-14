@@ -29,7 +29,7 @@
 
     "permissions": ["cookies", "<all_urls>", "tabs", "contextualIdentities", "menus", 
         "menus.overrideContext", "webRequest", "webRequestBlocking", "storage", 
-        "browsingData", "privacy", "browserSettings"],
+        "browsingData", "privacy", "browserSettings", "sessions"],
 
     "browser_specific_settings": {
         "gecko": {
