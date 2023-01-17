@@ -225,18 +225,24 @@ const unmuteTab = (tabId, tabAudibleIcon, tabMuteIcon) => () => {
 }
 
 
-const initSidebarhtml = () => {
-    addElement(document.getElementById('bottomButtons'), getStaticControlsTemplate);
-}
+const initSidebarhtml = () => 
+	addElement(document.getElementById('bottomButtonsWrapper'), getStaticControlsTemplate);
 
 
 const getStaticControlsTemplate = {
-    html: `<div class="button newPersistentContainerButton">New Persistent Container</div>`,
+	html: `<div class="bottomButtons">
+		<div class="button newPersistentContainerButton">New Persistent Container</div>
+		<div class="button clearStartPageTabsButton">Clear all StartPage Tabs</div>
+	</div>`,
     eventListeners: [{
         type: 'click',
         className: 'newPersistentContainerButton',
         func: () => newContainer()
-    }],
+    },{
+		type: 'click',
+		className: 'clearStartPageTabsButton',
+		func: () => removeAllStartpageTabs()
+	}],
     nodeReturn: []
 }
 
@@ -290,4 +296,10 @@ const newTab = async (cookieStoreId, url = 'about:blank') => {
         url: url
     });
 };
+
+const removeAllStartpageTabs = async () => {
+	const tabs = await browser.tabs.query({currentWindow: true});
+const startPageTabIds = tabs.filter(tab => tab.url.includes('startpage')).map(tab => tab.id);
+browser.tabs.remove(startPageTabIds);
+}
 

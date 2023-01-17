@@ -9,7 +9,7 @@ body {
 #content{ 
     display: flex;
     flex-direction: column;
-    height:93vh;
+    height:96vh;
     overflow-y: scroll;
     scrollbar-width: none;
 }
@@ -102,10 +102,18 @@ body {
     margin-right: 5px;
 }
 
-#bottomButtons {
-    height:40px;
-    display: flex;
-    flex-direction: row;
+//#bottomButtonsWrapper {
+//	display: flex;
+//	flex-flow: row nowrap;
+//  	height: 100%;
+//	width: 100%;
+//}
+
+.bottomButtons {
+	display: flex;
+	flex-flow: row nowrap;
+	height: 35px;
+	width: 100%;
     justify-content: center;
     align-items: center;
 }
@@ -113,7 +121,7 @@ body {
 .button {
     color: white;
     height: 25px;
-    width:100%;
+    width: 40%;
     background-color: teal;
     cursor: pointer;
     margin:5px 5px 5px 5px;

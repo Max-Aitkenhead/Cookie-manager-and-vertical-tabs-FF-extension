@@ -24,13 +24,11 @@ const defaultContextIdObj = _tabs => ({
 updateSidebar();
 setTimeout(() => initSidebarhtml(), 100);
 
-browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
-    setTimeout(() => updateSidebar(), 200);
-});
+browser.tabs.onRemoved.addListener((tabId, removeInfo) => setTimeout(() => updateSidebar(), 200));
 
-browser.tabs.onActivated.addListener(() => {
-    updateSidebar();
-});
+browser.tabs.onUpdated.addListener(() => updateSidebar());
+
+browser.tabs.onActivated.addListener(() => updateSidebar());
 
 document.addEventListener( "contextmenu", function(e) {
     e.preventDefault();
